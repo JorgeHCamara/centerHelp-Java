@@ -6,69 +6,31 @@ import br.com.centerhelp.dominio.equipamento.repository.TipoEquipamentoRepositor
 import br.com.centerhelp.dominio.equipamento.view.EquipamentoView;
 import br.com.centerhelp.dominio.equipamento.view.TipoEquipamentoView;
 import jakarta.persistence.Persistence;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.net.URI;
 
 public class Main {
-    public static void main(String[] args) {
 
-        var opcao = montaMenu();
+    private static final String BASE_URI = "http://localhost:8080";
 
-        while (opcao != 0) {
+    private static HttpServer startServer(){
 
-            switch (opcao) {
-                case 1 -> novoEquipamento();
-                case 2 -> novoTipoDeEquipamento();
+        ResourceConfig config = new ResourceConfig().packages("br.com.centerhelp.resources");
+        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), config);
 
-                }
-            opcao = montaMenu();
-            }
-        JOptionPane.showMessageDialog(null, "Muito obrigado por usar nosso sistema");
-        }
-
-
-
-    private static int montaMenu () {
-
-        String mensagemMenu = """
-                   Bem vindo ao Center Help
-                                
-                   Digite:
-                   ------------------------------------------------------
-                   1 - Cadastramento de Equipamento
-                   2 - Cadastramento de Tipo de Equipamento
-                   3 - Abertura de Serviço
-                   4 - Cadastramento de Tipo de Serviço
-                   ------------------------------------------------------
-                   0 - Sair
-                                
-                            """;
-
-        int opcao = Integer.parseInt(JOptionPane.showInputDialog(mensagemMenu));
-
-        return opcao;
     }
 
-    private static void novoTipoDeEquipamento () {
-        var tipo = TipoEquipamentoView.showForm(null);
-        tipo = TipoEquipamentoRepository.save(tipo);
+    public static void main(String[] args) throws IOException {
+        final HttpServer server = startServer();
+        System.out.println(String.format("O servidor Jersey foi inicializado com sucesso! Está operando no endereço %s%nAperte CTRL + C para parar o servidor ", BASE_URI));
+        System.in.read();
+        server.shutdown();
 
-        if (tipo != null) {
-
-            JOptionPane.showMessageDialog(null, "Tipo de Equipamento (" + tipo.getNome() + ") foi salvo com sucesso!");
-            System.out.println(tipo);
-
-        }
     }
 
-    private static void novoEquipamento () {
-        Equipamento e = EquipamentoView.showForm(null);
-
-        EquipamentoRepository.save(e);
-
-        System.out.println("Equipamento salvo com sucesso! " + e);
-
-        EquipamentoRepository.manager.close();
-        EquipamentoRepository.factory.close();
-    }
 }
